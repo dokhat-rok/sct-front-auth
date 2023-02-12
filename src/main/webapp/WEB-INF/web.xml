@@ -8,24 +8,24 @@
         <servlet-class>com.front.auth.controller.Dispatcher</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>CheckUser</servlet-name>
-        <servlet-class>com.front.auth.servlet.CheckUser</servlet-class>
+        <servlet-name>CheckCustomer</servlet-name>
+        <servlet-class>com.front.auth.servlet.CheckCustomer</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>Registration</servlet-name>
         <servlet-class>com.front.auth.servlet.Registration</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>AddUser</servlet-name>
-        <servlet-class>com.front.auth.servlet.AddUser</servlet-class>
+        <servlet-name>AddCustomer</servlet-name>
+        <servlet-class>com.front.auth.servlet.AddCustomer</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Dispatcher</servlet-name>
         <url-pattern>/Dispatcher</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>CheckUser</servlet-name>
-        <url-pattern>/CheckUser</url-pattern>
+        <servlet-name>CheckCustomer</servlet-name>
+        <url-pattern>/CheckCustomer</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Registration</servlet-name>
@@ -36,8 +36,8 @@
         <url-pattern>/htmlFiles/Registration</url-pattern>
     </servlet-mapping>-->
     <servlet-mapping>
-        <servlet-name>AddUser</servlet-name>
-        <url-pattern>/AddUser</url-pattern>
+        <servlet-name>AddCustomer</servlet-name>
+        <url-pattern>/AddCustomer</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

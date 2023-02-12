@@ -36,11 +36,11 @@ table .badge {
     padding-left: 1rem;
 }
 
-#user-login {
+#customer-login {
     color: aquamarine;
 }
 
-#user-balance {
+#customer-balance {
     color: aquamarine;
     padding: 0.5rem;
 }

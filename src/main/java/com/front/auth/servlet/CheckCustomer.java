@@ -18,12 +18,12 @@ import java.util.Map;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-public class CheckUser extends Dispatcher {
+public class CheckCustomer extends Dispatcher {
     /*private final Logger log = LoggerFactory.getLogger("com.project.servlet");*/
-    private static final Logger log = LoggerFactory.getLogger(CheckUser.class);
+    private static final Logger log = LoggerFactory.getLogger(CheckCustomer.class);
 
     public String getServletInfo(){
-        return "CheckUser servlet";
+        return "CheckCustomer servlet";
     }
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfig.class);
@@ -45,7 +45,7 @@ public class CheckUser extends Dispatcher {
             customerDto.setLogin(customer.getLogin());
             customerDto.setBalance(customer.getBalance());
             customerDto.setRole(customer.getRole());
-            servletContext.setAttribute("user", customerDto);
+            servletContext.setAttribute("customer", customerDto);
 
             String secret = "SystemCityTransport";
             Map<String, Object> claims = new HashMap<>();
@@ -58,7 +58,7 @@ public class CheckUser extends Dispatcher {
 
             String token = Jwts.builder().setClaims(claims).setSubject(customer.getId().toString()).setIssuedAt(now).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret).compact();
             HttpSession session = request.getSession();
-            session.setAttribute("userJwt", token);
+            session.setAttribute("customerJwt", token);
             log.debug("Логин пользователя {} ", customerDto.getLogin());
             response.sendRedirect(request.getContextPath() + "/main.jsp");
         }

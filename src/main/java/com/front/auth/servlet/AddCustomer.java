@@ -15,9 +15,9 @@ import java.sql.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-public class AddUser extends Dispatcher {
+public class AddCustomer extends Dispatcher {
     public String getServletInfo(){
-        return "Add user servlet";
+        return "Add customer servlet";
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

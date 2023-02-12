@@ -1,23 +1,23 @@
 var jwtToken = null;
 var irentServiceUrl = 'http://localhost:8081/webapp';
 
-class UserService {	
-  user;
+class CustomerService {
+  customer;
 
   constructor() {
   }	
 	
-  loadCurrentUser(successMethod) {
+  loadCurrentCustomer(successMethod) {
 	if(jwtToken) {
-		callRestService('/users/current', currentUser => {
-			this.user = currentUser;
+		callRestService('/customers/current', currentCustomer => {
+			this.customer = currentCastomer;
 			successMethod.call();
 		});
 	} else {
 		this.getJwt(jwt => {
 			jwtToken = jwt;
-			callRestService('/users/current', currentUser => {
-				this.user = currentUser;
+			callRestService('/customers/current', currentCustomer => {
+				this.customer = currentCustomer;
 				successMethod.call();
 			});
 		})
