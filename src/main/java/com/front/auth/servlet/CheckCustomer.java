@@ -5,6 +5,7 @@ import com.front.auth.controller.Dispatcher;
 import com.front.auth.dao.CustomerControllerDao;
 import com.front.auth.model.dto.CustomerDto;
 import com.front.auth.model.entity.Customer;
+import com.front.auth.utils.JwtUtil;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
@@ -47,18 +48,9 @@ public class CheckCustomer extends Dispatcher {
             customerDto.setRole(customer.getRole());
             servletContext.setAttribute("customer", customerDto);
 
-            String secret = "SystemCityTransport";
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("login", customer.getLogin());
-            claims.put("role", customer.getRole());
-            claims.put("balance", customer.getBalance());
-
-            Date now = new Date(System.currentTimeMillis());
-            Date expirationDate = new Date(now.getTime() + 60 * 60 * 1000);
-
-            String token = Jwts.builder().setClaims(claims).setSubject(customer.getId().toString()).setIssuedAt(now).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret).compact();
+            String token = JwtUtil.getJwtHours(customer, 1);
             HttpSession session = request.getSession();
-            session.setAttribute("customerJwt", token);
+            session.setAttribute("token", token);
             log.debug("Логин пользователя {} ", customerDto.getLogin());
             response.sendRedirect(request.getContextPath() + "/main.jsp");
         }

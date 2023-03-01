@@ -39,15 +39,15 @@ public class AddCustomer extends Dispatcher {
                 customer.setRole(Role.USER);
 
                 try {
-                    CustomerControllerDao userController = context.getBean(CustomerControllerDao.class);
-                    boolean successRegistration = userController.create(customer);
+                    CustomerControllerDao customerController = context.getBean(CustomerControllerDao.class);
+                    boolean successRegistration = customerController.create(customer);
                     if (successRegistration) {
-                        customer = userController.getEntityByLoginPassword(login, password);
+                        customer = customerController.getEntityByLoginPassword(login, password);
                         CustomerDto customerDto = new CustomerDto();
                         customerDto.setLogin(customer.getLogin());
                         customerDto.setBalance(customer.getBalance());
                         customerDto.setRole(customer.getRole());
-                        servletContext.setAttribute("user", customerDto);
+                        servletContext.setAttribute("customer", customerDto);
                         this.forward("/jspFiles/successRegistration.jsp", request, response);
                     }
                     else {
