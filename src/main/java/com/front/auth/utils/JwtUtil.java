@@ -20,8 +20,6 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("login", customer.getLogin());
         claims.put("role", customer.getRole());
-        claims.put("balance", customer.getBalance());
-
         Date now = new Date(System.currentTimeMillis());
         Date expirationDate = new Date(now.getTime() + milliSeconds);
 
