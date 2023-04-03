@@ -7,7 +7,7 @@ var activeParking, activeVehicle;
 var parkingsService = new ParkingsService();
 var vehiclesService = new VehiclesService();
 var tripsService = new TripsService();
-var userService = new UserService();
+var customerService = new CustomerService();
 
 var parkingBalloonContentLayout;
 
@@ -15,10 +15,10 @@ $(document).ready(function() {
 	pages = [$("div#map-container"), $("div#trips-container")];
 	pages.forEach(page => page.hide());
 	
-	userService.loadCurrentUser(currentUser => {
-		$("span#user-login").html(userService.user.login);
-		if(userService.user.balance) {
-			$("span#user-balance").html(`${userService.user.balance}р.`);
+	customerService.loadCurrentCustomer(currentCustomer => {
+		$("span#customer-login").html(customerService.customer.login);
+		if(customerService.customer.balance) {
+			$("span#customer-balance").html(`${customerService.customer.balance}р.`);
 		}
 		
 		initLayout();
@@ -26,7 +26,7 @@ $(document).ready(function() {
 });
 
 function isAdmin() {
-	return userService.user.role == 'ADMIN';
+	return customerService.customer.role == 'ADMIN';
 }
 
 function initLayout() {
@@ -205,7 +205,7 @@ function initTripsPage() {
 			tableBody.append(
 				'<tr>' + 
 					`<td>${item.id}</td>` + 
-					`<td>${item.user.login}</td>` +
+					`<td>${item.customer.login}</td>` +
 					`<td>${item.transport.identificationNumber}</td>` +
 					`<td><span class="badge ${badgeClass}">${statusText}</span></td>` + 
 					`<td>${item.beginTimeRent} ${item.endTimeRent ? ' - ' + item.endTimeRent : ''}</td>` +

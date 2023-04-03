@@ -15,8 +15,10 @@ public class JwtTokenServlet extends Dispatcher {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
-        String token = (String) session.getAttribute("userJwt");
+        String token = (String) session.getAttribute("token");
         PrintWriter writer = response.getWriter();
-        writer.println(token);
+        String writeToken = token == null ? "null" : "\"" + token + "\"";
+        writer.println("{\"token\":" + writeToken + "}");
+        writer.flush();
     }
 }

@@ -16,7 +16,7 @@ public class Registration extends Dispatcher {
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (request.getParameter("submit_login")!=null){
-            this.forward("/CheckUser", request, response);
+            this.forward("/CheckCustomer", request, response);
         }
         else if (request.getParameter("submit_registration")!=null) {
             this.forward("/registration.html", request, response);
