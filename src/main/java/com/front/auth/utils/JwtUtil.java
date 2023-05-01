@@ -23,7 +23,13 @@ public class JwtUtil {
         Date now = new Date(System.currentTimeMillis());
         Date expirationDate = new Date(now.getTime() + milliSeconds);
 
-        return Jwts.builder().setClaims(claims).setSubject(customer.getId().toString()).setIssuedAt(now).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret).compact();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(customer.getId().toString())
+                .setIssuedAt(now)
+                .setExpiration(expirationDate)
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
     }
 
     public static String getJwtDays(Customer customer, long days){
