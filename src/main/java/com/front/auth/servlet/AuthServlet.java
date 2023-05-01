@@ -9,6 +9,7 @@ import com.front.auth.model.enums.Role;
 import com.front.auth.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -22,6 +23,9 @@ import java.sql.SQLException;
 
 @WebServlet("/auth")
 public class AuthServlet extends Dispatcher {
+
+    @Value("${customer.init.balance}")
+    private Long initBalance;
 
     private final Logger log = LoggerFactory.getLogger(AuthServlet.class);
 
@@ -68,7 +72,7 @@ public class AuthServlet extends Dispatcher {
             customer.setId(0L);
             customer.setLogin(login);
             customer.setPassword(password);
-            customer.setBalance(0L);
+            customer.setBalance(initBalance);
             customer.setRole(Role.USER);
             log.info("{}", customer.getLogin());
 

@@ -1,3 +1,5 @@
 spring.datasource.url = jdbc:postgresql://postgres:5432/dbase_sct
 spring.datasource.username = sctuser
 spring.datasource.password = sctpass
+
+customer.init.balance = 1000
