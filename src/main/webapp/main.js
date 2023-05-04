@@ -4,15 +4,19 @@ var map;
 
 var activeParking, activeVehicle;
 
-var parkingsService = new ParkingsService();
-var vehiclesService = new VehiclesService();
-var tripsService = new TripsService();
+var parkingService = new ParkingService();
+var transportService = new TransportService();
+var rentService = new RentService();
 var customerService = new CustomerService();
+var priceService = new PriceService();
 
 var parkingBalloonContentLayout;
 
+var parkingList;
+
 $(document).ready(function() {
-	pages = [$("div#map-container"), $("div#trips-container")];
+	pages = [$("div#map-container"), $("div#trips-container"), $("div#transport-container"), $("div#parking-container"),
+		$("div#customers-container"), $("div#price-container")];
 	pages.forEach(page => page.hide());
 	
 	customerService.loadCurrentCustomer(currentCustomer => {
@@ -26,7 +30,7 @@ $(document).ready(function() {
 });
 
 function isAdmin() {
-	return customerService.customer.role == 'ADMIN';
+	return customerService.customer.role == 'ADMIN' || customerService.customer.role == 'MANAGER';
 }
 
 function initLayout() {
@@ -53,14 +57,22 @@ function initPage(pageName) {
 		initMapPage();
 	} else if(pageName == "#trips-container") {
 		initTripsPage();
-	}	
+	} else if(pageName == "#transport-container") {
+		initTransportPage();
+	} else if(pageName == "#customers-container") {
+		initCustomersPage();
+	} else if(pageName == "#parking-container") {
+		initParkingPage();
+	} else if(pageName == "#price-container") {
+		initPricePage();
+	}
 }
 
 function initVehicleCreation() {
-	parkingsService.getParkings(parkings => {
+	parkingService.getParkings(parkings => {
 		$("#vehicle-parking").empty();
 		parkings.forEach(parking => {
-			$("#vehicle-parking").append(`<option value="${parking.id}">${parking.name}</option>`); 
+			$("#vehicle-parking").append(`<option value="${parking.name}">${parking.name}</option>`);
 		});		
 	});
 
@@ -79,15 +91,8 @@ function initVehicleCreation() {
 }
 
 function completeVehicleCreation() {
-	var vehicleType;
-	if($("#vehicle-type").val() == 'ELECTRIC_SCOOTER'){
-		vehicleType = 'SCOOTER'
-	}
-	else{
-		vehicleType = 'BICYCLE'
-	}
-	vehiclesService.createVehicle({
-		type: vehicleType,
+	transportService.createTransports({
+		type: $("#vehicle-type").val(),
 		parking: {name: $("#vehicle-parking").val()}
 	}, () => {
 		complateFormAction();
@@ -117,7 +122,7 @@ function initParkingCreation() {
 }
 
 function completeParkingCreation() {
-	parkingsService.createParking({
+	parkingService.createParking({
 		name: $("#parking-name").val(),
 		type: "ALL",
 		allowedRadius:$("#parking-radius").val(),
@@ -178,10 +183,10 @@ function initMapPage() {
 
 function loadMapObjects() {
 	map.geoObjects.removeAll();
-	vehiclesService.getVehicles(function(vehicles) {
+	transportService.getTransports(function(vehicles) {
 		vehicles.forEach(vehicle => addVehicleToMap(vehicle));
 	});
-	parkingsService.getParkings(parkings => {
+	parkingService.getParkings(parkings => {
 		parkings.forEach(parking => addParkingToMap(parking));
 	});
 }
@@ -190,9 +195,9 @@ function initTripsPage() {
 	var tableBody = $('div#trips-container table tbody');
 	var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
-	tripsService.getTrips(function(trips) {
+	rentService.getRents(function(rents) {
 		tableBody.empty();
-		trips.forEach(item => {
+		rents.content.forEach(item => {
 			var statusText, badgeClass;
 			if(item.status == 'CLOSE') {
 				statusText = 'ЗАВЕРШЕНА';
@@ -210,10 +215,162 @@ function initTripsPage() {
 					`<td><span class="badge ${badgeClass}">${statusText}</span></td>` + 
 					`<td>${item.beginTimeRent} ${item.endTimeRent ? ' - ' + item.endTimeRent : ''}</td>` +
 					`<td>${item.beginParking.name} -> ` + (item.endParking ? `${item.endParking.name}</td>` : '</td>') +
-					`<td>${item.amount ? item.amount : '40'}</td>` +
+					`<td>${item.amount ? item.amount : ''}</td>` +
 				'</tr>');
 		});
 	});	
+}
+
+function initTransportPage() {
+	var tableBody = $('div#transport-container table tbody');
+	parkingService.getParkings(parkingL => {
+		parkingList = parkingL;
+	});
+	transportService.getTransportsPageable(function(transports) {
+		tableBody.empty();
+		transports.content.forEach(item => {
+			var id = item.id;
+			var type, condition, status;
+			type = item.type == "SCOOTER" ? 'Самокат' : 'Велосипед';
+
+			condition = item.condition;
+			if(condition == 'EXCELLENT') {
+				condition = 'Отлично';
+			}
+			else if(condition == 'GOOD') {
+				condition = 'Хорошо';
+			}
+			else {
+				condition = 'Посредственно';
+			}
+
+			status = item.status;
+			if(status == 'FREE') {
+				status = 'Свободен';
+			}
+			else if(status == 'BUSY') {
+				status = 'Занят';
+			}
+			else {
+				status = 'Недоступен';
+			}
+
+			tableBody.append(
+				'<tr>' +
+				`<td id="id-${id}" class="immutable">${item.id}</td>` +
+				`<td id="type-${id}" class="immutable">${type}</td>` +
+				`<td id="ident-${id}" class="immutable">${item.identificationNumber}</td>` +
+				`<td id="coor-${id}">${item.coordinates ? item.coordinates : '-'}</td>` +
+				`<td id="park-${id}" class="park-selector">${item.parking ? item.parking.name : '-'}</td>` +
+				`<td id="cond-${id}" class="condition-selector">${condition}</td>` +
+				`<td id="status-${id}" class="status-selector">${status}</td>` +
+				`<td id="charge-${id}" class="number">${item.chargePercentage ? item.chargePercentage : '-'}</td>` +
+				`<td id="speed-${id}" class="number">${item.maxSpeed ? item.maxSpeed : '-'}</td>` +
+				'</tr>');
+		});
+	});
+}
+
+function initCustomersPage() {
+	var tableBody = $('div#customers-container table tbody');
+	customerService.getCustomersPageable(function(customers) {
+		tableBody.empty();
+		customers.content.forEach(item => {
+			var role = item.role;
+			if(role == 'USER'){
+				role = 'Пользователь';
+			}
+			else if(role == 'MANAGER' ) {
+				role = 'Менеджер';
+			}
+			else {
+				role = 'Администратор';
+			}
+			tableBody.append(
+				'<tr>' +
+				`<td>${item.login}</td>` +
+				`<td>${item.balance}</td>` +
+				`<td>${role}</td>` +
+				`<td>${item.tripCount}</td>` +
+				'</tr>');
+		});
+	});
+}
+
+function initParkingPage() {
+	parkingService.getParkingPageable(fillParking);
+}
+
+function initParkingPageFiltered() {
+	var name = $("#name-filter").val();
+	var type = $("#type-filter").val();
+	var status = $("#status-filter").val();
+	var filter = {
+		name: name == '' ? null : name,
+		type: type == '' ? null : type,
+		status: status == '' ? null : status,
+		page: 0,
+		size: 100
+	}
+	console.log(filter)
+	parkingService.getParkingPageable(fillParking, filter);
+}
+
+function dropParkingFiltered() {
+	document.getElementById("name-filter").value = '';
+	document.getElementById("type-filter").selectedIndex = 0;
+	document.getElementById("status-filter").selectedIndex = 0;
+	initParkingPage();
+}
+
+function initPricePage() {
+	var tableBody = $('div#price-container table tbody');
+	tableBody.empty();
+	['BICYCLE', 'SCOOTER'].forEach(type => {
+		priceService.getPrice(type, function (price) {
+			tableBody.append(
+				'<tr>' +
+				`<td id="name-${type}" class="immutable">${type == "SCOOTER" ? "Самокат" : "Велосипед"}</td>` +
+				`<td id="init-${type}">${price.init}</td>` +
+				`<td id="minute-${type}">${price.perMinute}</td>` +
+				'</tr>'
+			);
+		});
+	});
+}
+
+function fillParking(parkingList) {
+	var tableBody = $('div#parking-container table tbody');
+	tableBody.empty();
+	parkingList.content.forEach(item => {
+		var id = item.id;
+		var type, status;
+
+		type = item.type;
+		if(type == "ALL") {
+			type = "Все";
+		}
+		else if(type == "ONLY_BICYCLE") {
+			type = "Только велосипеды";
+		}
+		else {
+			type = "Только самокаты";
+		}
+
+		status = item.status;
+		status = status == "ACTIVE" ? "Активна" : "Неактивна";
+
+		tableBody.append(
+			'<tr>' +
+			`<td id="id-${id}" class="immutable">${id}</td>` +
+			`<td id="name-${id}" class="immutable">${item.name}</td>` +
+			`<td id="coor-${id}">${item.coordinates}</td>` +
+			`<td id="rad-${id}" class="number">${item.allowedRadius}</td>` +
+			`<td id="park_type-${id}" class="immutable">${type}</td>` +
+			`<td id="park_status-${id}" class="status-selector">${status}</td>` +
+			`<td class="immutable">${item.transports.length}</td>` +
+			'</tr>');
+	});
 }
 
 function addParkingToMap(parking) {
@@ -251,11 +408,12 @@ function addVehicleToMap(vehicle) {
 		statusName = 'Арендован';
 	}
 	var content;
-	var typeName = vehicle.type == 'BICYCLE' ? 'Велосипед' : 'Электросамокат';
-	
+	var typeName = vehicle.type == 'BICYCLE' ? 'Велосипед' : 'Cамокат';
 	content = 	`<strong>${typeName} ${vehicle.identificationNumber}</strong><br>` +
-				`Статус: ${statusName}<br>` + 
-				`Парковка: ${vehicle.parking.name}<br>`;
+				`Статус: ${statusName}<br>`;
+	if(vehicle.parking != null) {
+		content += `Парковка: ${vehicle.parking.name}<br>`;
+	}
 
 	if(vehicle.type == 'SCOOTER') {
 		content += `Макс. скорость: ${vehicle.maxSpeed} км/ч<br>`;
@@ -272,4 +430,264 @@ function addVehicleToMap(vehicle) {
         
 	map.geoObjects.add(vehiclePlacemark);
 }
-      
+
+
+$(function () {
+	var conditionSelector =
+		"<select id='sel'>" +
+			"<option>Отлично</option>" +
+			"<option>Хорошо</option>" +
+			"<option>Посредственно</option>"
+		"</select>";
+
+	var statusSelector =
+		"<select id='sel'> " +
+			"<option>Свободен</option>" +
+			"<option>Занят</option>" +
+			"<option>Недоступен</option>" +
+		"</select>";
+
+	$('.transportTable').on('dblclick', 'td', function () {
+
+		var tdClass =$(this).attr("class");
+		if(tdClass == 'immutable') {
+			return;
+		}
+		var origContent = $(this).text();
+
+		var inputType;
+		var select = false;
+		if(tdClass == 'condition-selector') {
+			inputType = conditionSelector;
+			select = true;
+		}
+		else if(tdClass == 'status-selector') {
+			inputType = statusSelector;
+			select = true;
+		}
+		else if(tdClass == 'park-selector') {
+			inputType = "<select id='sel'>";
+			parkingList.forEach(item => {
+				inputType += "<option>" + item.name + "</option>";
+			})
+			inputType += "<option>-</option></select>";
+			select = true;
+		}
+		else if(tdClass == 'number') {
+			inputType = "<input type='number' value='" + origContent + "' />";
+		}
+		else {
+			inputType = "<input type='text' value='" + origContent + "' />";
+		}
+
+		$(this).html(inputType);
+		if(select) {
+			changeSelected(document.getElementById('sel'), origContent);
+		}
+		$(this).children().first().focus();
+
+		$(this).children().first().keypress(function (e) {
+			if (e.which == 13) {
+				var newContent;
+				if(select) {
+					var sel = document.getElementById('sel');
+					newContent = sel.options[sel.selectedIndex].innerText;
+				}
+				else {
+					newContent = $(this).val();
+				}
+				var elem = $(this).parent();
+				elem.text(newContent);
+				var id = elem.attr("id").split("-")[1];
+				var transport = {
+					"identificationNumber" : document.getElementById('ident-' + id).innerText,
+					"coordinates" : document.getElementById('coor-' + id).innerText,
+					"condition" : document.getElementById('cond-' + id).innerText,
+					"status" : document.getElementById('status-' + id).innerText,
+					"chargePercentage" : document.getElementById('charge-' + id).innerText,
+					"maxSpeed" : document.getElementById('speed-' + id).innerText,
+					"parking" : {
+						"name" : document.getElementById('park-' + id).innerText
+					}
+				};
+
+				var condition = transport["condition"];
+				console.log(condition);
+				console.log(transport);
+				if(condition == 'Отлично') {
+					condition = 'EXCELLENT';
+				}
+				else if(condition == 'Хорошо') {
+					condition = 'GOOD';
+				}
+				else {
+					condition = 'SATISFACTORY';
+				}
+				transport["condition"] = condition;
+
+				var status = transport["status"];
+				if(status == 'Свободен') {
+					status = 'FREE';
+				}
+				else if(status == 'Занят') {
+					status = 'BUSY';
+				}
+				else {
+					status = 'UNAVAILABLE';
+				}
+				transport["status"] = status;
+
+				var type = transport["type"];
+				transport["type"] = type == 'Самокат' ? 'SCOOTER' : 'BICYCLE';
+
+				var charge = transport["chargePercentage"];
+				transport["chargePercentage"] = charge == '-' ? null : charge;
+
+				var speed = transport["maxSpeed"];
+				transport["maxSpeed"] = speed == '-' ? null : speed;
+
+				var coordinates = transport["coordinates"];
+				transport["coordinates"] = coordinates == '-' ? null : coordinates;
+
+				if(transport["parking"]["name"] == '-'){
+					transport["parking"]["name"] = null;
+				}
+				transportService.updateTransport(transport, {});
+			}
+		});
+
+		$(this).children().first().blur(function(){
+			$(this).parent().text(origContent);
+		});
+
+	});
+});
+
+$(function () {
+	var statusSelector =
+		"<select id='sel'> " +
+		"<option>Активна</option>" +
+		"<option>Неактивна</option>" +
+		"</select>";
+
+	$('.parkingTable').on('dblclick', 'td', function () {
+
+		console.log("Начало")
+		var tdClass =$(this).attr("class");
+		if(tdClass == 'immutable') {
+			console.log("Неизменяемая")
+			return;
+		}
+		var origContent = $(this).text();
+
+		var inputType;
+		var select = false;
+		if(tdClass == 'status-selector') {
+			inputType = statusSelector;
+			select = true;
+		}
+		else if(tdClass == 'number') {
+			inputType = "<input type='number' value='" + origContent + "' />";
+		}
+		else {
+			inputType = "<input type='text' value='" + origContent + "' />";
+		}
+
+		$(this).html(inputType);
+		if (select) {
+			changeSelected(document.getElementById('sel'), origContent);
+		}
+
+		$(this).children().first().focus();
+
+		$(this).children().first().keypress(function (e) {
+			if (e.which == 13) {
+				var newContent;
+				if(select) {
+					var sel = document.getElementById('sel');
+					newContent = sel.options[sel.selectedIndex].innerText;
+				}
+				else {
+					newContent = $(this).val();
+				}
+				if(newContent == origContent) {
+					return;
+				}
+				var elem = $(this).parent();
+				elem.text(newContent);
+				var id = elem.attr("id").split("-")[1];
+				var parking = {
+					"name" : document.getElementById('name-' + id).innerText,
+					"coordinates" : document.getElementById('coor-' + id).innerText,
+					"allowedRadius" : document.getElementById('rad-' + id).innerText,
+					"type" : document.getElementById('park_type-'+id).innerText,
+					"status" : document.getElementById('park_status-' + id).innerText
+				};
+
+				var status = parking["status"];
+				status = status == "Активна" ? "ACTIVE" : "NON_ACTIVE";
+				parking["status"] = status;
+
+				var type = parking["type"];
+				if(type == 'Все') {
+					type = 'ALL';
+				}
+				else if(type == 'Только велосипеды') {
+					type = "ONLY_BICYCLE";
+				}
+				else {
+					type = "Только самокаты";
+				}
+				parking["type"] = type;
+
+				parkingService.updateParking(parking, {});
+			}
+		});
+
+		$(this).children().first().blur(function(){
+			$(this).parent().text(origContent);
+		});
+
+	});
+});
+
+$(function () {
+	$('.priceTable').on('dblclick', 'td', function () {
+		var tdClass =$(this).attr("class");
+		if(tdClass == 'immutable') {
+			return;
+		}
+		var OriginalContent = $(this).text();
+		$(this).html("<input type='number' value='" + OriginalContent + "' />");
+		$(this).children().first().focus();
+
+		$(this).children().first().keypress(function (e) {
+			if (e.which == 13) {
+				var newContent = $(this).val();
+				var elem = $(this).parent();
+				elem.text(newContent);
+				var type = elem.attr("id").split("-")[1];
+				var price = {
+					"init" : document.getElementById('init-' + type).innerText,
+					"perMinute" : document.getElementById('minute-' + type).innerText
+				};
+
+				priceService.updatePrice(type, price, {});
+			}
+		});
+
+		$(this).children().first().blur(function(){
+			$(this).parent().text(OriginalContent);
+		});
+
+	});
+});
+
+function changeSelected(select, text) {
+	console.log(select)
+	for(var i = 0; i < select.options.length; i++) {
+		if (select[i].value == text) {
+			select.selectedIndex = i;
+		}
+	}
+}
