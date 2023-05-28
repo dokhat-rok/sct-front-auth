@@ -1,5 +1,5 @@
 var jwtToken = null;
-var irentServiceUrl = 'http://localhost:8081/webapp';
+var irentServiceUrl = 'http://localhost:8081/api/v1';
 
 class CustomerService {
   customer;
@@ -9,19 +9,23 @@ class CustomerService {
 	
   loadCurrentCustomer(successMethod) {
 	if(jwtToken) {
-		callRestService('/customers/current', currentCustomer => {
+		callRestService('/customer/current', currentCustomer => {
 			this.customer = currentCastomer;
 			successMethod.call();
 		});
 	} else {
 		this.getJwt(jwt => {
-			jwtToken = jwt;
-			callRestService('/customers/current', currentCustomer => {
+			jwtToken = JSON.parse(jwt);
+			callRestService('/customer/current', currentCustomer => {
 				this.customer = currentCustomer;
 				successMethod.call();
 			});
 		})
 	};
+  }
+
+  getCustomersPageable(successMethod, data = {page: 0, size: 100}) {
+	  callRestService('/customer/all/pageable', successMethod, 'GET', data);
   }
   
   getJwt(successMethod) {
@@ -33,16 +37,24 @@ class CustomerService {
   }
 }
 
-class ParkingsService {
+class ParkingService {
   constructor() {
   }	
 	
   getParkings(successMethod) {
-    callRestService('/parking', successMethod);
+    callRestService('/parking/all', successMethod);
+  }
+
+  getParkingPageable(successMethod, data = {page: 0, size: 100}) {
+	  callRestService('/parking/all/pageable', successMethod, 'GET', data)
   }
 
   createParking(parking, successMethod) {
     callRestService('/parking', successMethod, 'POST', parking);
+  }
+
+  updateParking(parking, successMethod) {
+	  callRestService('/parking', successMethod, 'PUT', parking);
   }
 
   deleteParking(id, successMethod) {
@@ -50,40 +62,71 @@ class ParkingsService {
   }
 }
 
-class VehiclesService {
+class TransportService {
   constructor() {
   }
 	
-  getVehicles(successMethod) {
-    callRestService('/transports', successMethod);
+  getTransports(successMethod) {
+    callRestService('/transport/all', successMethod);
   }
 
-  createVehicle(vehicle, successMethod) {
-    callRestService('/transports', successMethod, 'POST', vehicle);
+  getTransportsPageable(successMethod, data = {page: 0, size: 100}) {
+	  callRestService('/transport/all/pageable', successMethod, 'GET', data)
+  }
+
+  createTransports(transport, successMethod) {
+    callRestService('/transport', successMethod, 'POST', transport);
+  }
+
+  updateTransport(transport, successMethod) {
+	  callRestService('/transport', successMethod, 'PUT', transport);
   }
 } 
 
-class TripsService {
+class RentService {
   constructor() {
   }
 	
-  getTrips(successMethod) {
-    callRestService('/trip', successMethod, 'GET');
+  getRents(successMethod, data = {page: 0, size: 100}) {
+    callRestService('/rent/all/pageable', successMethod, 'GET', data);
   }
+}
+
+class PriceService {
+	constructor() {}
+
+	getPrice(transportType, successMethod) {
+		callRestService(`/price/${transportType}`, successMethod);
+	}
+
+	updatePrice(transportType, data, successMethod) {
+		callRestService(`/price/${transportType}`, successMethod, 'PUT', data);
+	}
 }
 
 function callRestService(restUrl, successMethod, method = 'GET', data = null) {
 	$.ajax({
 		url: `${irentServiceUrl}${restUrl}`,
 		method: method,
-		data: JSON.stringify(data),
+		data: method == 'GET' ? getQuery(data) : JSON.stringify(data),
 		headers: {
-			"Authorization": `Bearer ${jwtToken}`,
+			"Authorization": `Bearer ${jwtToken.token}`,
 			"Content-Type": 'application/json'
 		},
 		success: successMethod,
 		error: showErrorToast
 	});
+}
+
+function getQuery(data) {
+	var query = '';
+	for(key in data) {
+		if (data[key] == null) {
+			continue;
+		}
+		query += key + "=" + data[key] + '&'
+	}
+	return query.length > 0 ? query.slice(0, -1) : null;
 }
 
 function showErrorToast(error) {

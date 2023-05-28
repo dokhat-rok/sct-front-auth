@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
-@WebServlet("/mobile/auth")
-public class MobileAuthServlet extends Dispatcher {
+@WebServlet("/auth")
+public class AuthServlet extends Dispatcher {
 
-    private final Logger log = LoggerFactory.getLogger(MobileAuthServlet.class);
+    private final Logger log = LoggerFactory.getLogger(AuthServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -50,6 +50,7 @@ public class MobileAuthServlet extends Dispatcher {
             HttpSession session = request.getSession();
             session.setAttribute("token", token);
             response.getWriter().println("{\"token\":\"" + token + "\"}");
+            response.setContentType("application/json");
             log.info("Авторизация пользователя {} пройдена успешно", login);
         }
     }
@@ -67,7 +68,8 @@ public class MobileAuthServlet extends Dispatcher {
             customer.setId(0L);
             customer.setLogin(login);
             customer.setPassword(password);
-            customer.setBalance(0L);
+            Long initBalance = 1000L;
+            customer.setBalance(initBalance);
             customer.setRole(Role.USER);
             log.info("{}", customer.getLogin());
 
