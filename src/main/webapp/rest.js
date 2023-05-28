@@ -24,8 +24,8 @@ class CustomerService {
 	};
   }
 
-  getCustomersPageable(successMethod) {
-	  callRestService('/customer/all/pageable', successMethod, 'GET', {"page":0, "size":100});
+  getCustomersPageable(successMethod, data = {page: 0, size: 100}) {
+	  callRestService('/customer/all/pageable', successMethod, 'GET', data);
   }
   
   getJwt(successMethod) {
@@ -70,8 +70,8 @@ class TransportService {
     callRestService('/transport/all', successMethod);
   }
 
-  getTransportsPageable(successMethod) {
-	  callRestService('/transport/all/pageable', successMethod, 'GET', {"page":0, "size":100})
+  getTransportsPageable(successMethod, data = {page: 0, size: 100}) {
+	  callRestService('/transport/all/pageable', successMethod, 'GET', data)
   }
 
   createTransports(transport, successMethod) {
@@ -87,8 +87,8 @@ class RentService {
   constructor() {
   }
 	
-  getRents(successMethod) {
-    callRestService('/rent/all/pageable', successMethod, 'GET', {"page": 0, "size": 100});
+  getRents(successMethod, data = {page: 0, size: 100}) {
+    callRestService('/rent/all/pageable', successMethod, 'GET', data);
   }
 }
 

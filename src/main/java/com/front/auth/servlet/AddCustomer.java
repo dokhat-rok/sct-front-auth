@@ -16,6 +16,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 public class AddCustomer extends Dispatcher {
+
     public String getServletInfo(){
         return "Add customer servlet";
     }
