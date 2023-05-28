@@ -71,7 +71,8 @@ public class CustomerControllerDao extends AbstractControllerDao<Customer, Integ
         }
         if(confirmUnique){
             statement.executeUpdate(
-                    "insert into CUSTOMER values (" + (lastId + 1) + ", '" + customer.getLogin() + "', '" + customer.getPassword() + "', 0,  '" + customer.getRole() +"');"
+                    "insert into CUSTOMER values (" + (lastId + 1) + ", '" + customer.getLogin() + "', '"
+                            + customer.getPassword() + "', " + customer.getBalance() + ",  '" + customer.getRole() +"');"
             );
             super.closeStatement(statement);
             return true;

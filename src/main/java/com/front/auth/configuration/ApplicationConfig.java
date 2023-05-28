@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource(value = "classpath:/application.property")
+@PropertySource(value = "classpath:/application.properties")
 public class ApplicationConfig {
     @Bean
     public DBConnectionManager dbConnectionManager(){
@@ -20,6 +20,5 @@ public class ApplicationConfig {
         System.out.println(CustomerControllerDao.class);
         return new CustomerControllerDao(this.dbConnectionManager());
     }
-
 
 }

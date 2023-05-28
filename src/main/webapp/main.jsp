@@ -3,7 +3,7 @@
 
 <html>
 	<head>
-		<title>SCT Rent</title>
+		<title>IRent</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -32,7 +32,7 @@
 
 		<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
 		<div class="container-fluid">
-			<a class="navbar-brand" href="#">SCT Rent</a>
+			<a class="navbar-brand" href="#">IRent</a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
@@ -110,7 +110,7 @@
 		</div>
 
 		<div id="parking-container" class="page-container">
-			<div>
+			<div class="filter">
 				<input id="name-filter" type="text" placeholder="Название" onchange="initParkingPageFiltered()"/>
 				<select id="type-filter" onchange="initParkingPageFiltered()">
 					<option value=></option>
@@ -142,6 +142,23 @@
 		</div>
 
 		<div id="transport-container" class="page-container">
+			<div class="filter">
+				<input id="ident-filter" type="text" placeholder="Номер" onchange="initTransportPageFiltered()"/>
+				<input id="p-name-filter" type="text" placeholder="Парковка" onchange="initTransportPageFiltered()"/>
+				<select id="cond-filter" onchange="initTransportPageFiltered()">
+					<option value=></option>
+					<option value="EXCELLENT">Отлично</option>
+					<option value="GOOD">Хорошо</option>
+					<option value="SATISFACTORY">Посредственно</option>
+				</select>
+				<select id="t-status-filter" onchange="initTransportPageFiltered()">
+					<option value=></option>
+					<option value="FREE">Свободен</option>
+					<option value="BUSY">Занят</option>
+					<option value="UNAVAILABLE">Недоступен</option>
+				</select>
+				<input type="submit" value="Сбросить" onclick="dropTransportFiltered()"/>
+			</div>
 			<table class="table transportTable">
 				<thead>
 				<tr>
@@ -161,6 +178,16 @@
 		</div>
 
 		<div id="customers-container" class="page-container">
+			<div class="filter">
+				<input id="login-filter" type="text" placeholder="Логин" onchange="initCustomersPageFiltered()"/>
+				<select id="role-filter" onchange="initCustomersPageFiltered()">
+					<option value=></option>
+					<option value="USER">Пользователь</option>
+					<option value="MANAGER">Менеджер</option>
+					<option value="ADMIN">Администратор</option>
+				</select>
+				<input type="submit" value="Сбросить" onclick="dropCustomersFiltered()"/>
+			</div>
 			<table class="table">
 				<thead>
 				<tr>
@@ -175,6 +202,16 @@
 		</div>
 
 		<div id="trips-container" class="page-container">
+			<div class="filter">
+				<input id="r-login-filter" type="text" placeholder="Логин пользователя" onchange="initTripsPageFiltered()"/>
+				<input id="r-ident-filter" type="text" placeholder="Номер транспорта" onchange="initTripsPageFiltered()"/>
+				<select id="r-status-filter" onchange="initTripsPageFiltered()">
+					<option value=></option>
+					<option value="OPEN">В процессе</option>
+					<option value="CLOSE">Завершена</option>
+				</select>
+				<input type="submit" value="Сбросить" onclick="dropTripsFiltered()"/>
+			</div>
 			<table class="table">
 				<thead>
 				<tr>

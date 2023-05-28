@@ -192,109 +192,176 @@ function loadMapObjects() {
 }
 
 function initTripsPage() {
+	rentService.getRents(fillTrips);
+}
+
+function initTripsPageFiltered() {
+	var login = $("#r-login-filter").val();
+	var ident = $("#r-ident-filter").val();
+	var status = $("#r-status-filter").val();
+	var filter = {
+		login: login == '' ? null : login,
+		transportIdent: ident == '' ? null : ident,
+		status: status == '' ? null : status,
+		page: 0,
+		size: 100
+	}
+	rentService.getRents(fillTrips, filter);
+}
+
+function dropTripsFiltered() {
+	document.getElementById("r-login-filter").value = '';
+	document.getElementById("r-ident-filter").value = '';
+	document.getElementById("r-status-filter").selectedIndex = 0;
+	initTripsPage();
+}
+
+function fillTrips(rents) {
 	var tableBody = $('div#trips-container table tbody');
-	var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+	tableBody.empty();
+	rents.content.forEach(item => {
+		var statusText, badgeClass;
+		if(item.status == 'CLOSE') {
+			statusText = 'Завершена';
+			badgeClass = 'alert-success';
+		} else {
+			badgeClass = 'alert-primary';
+			statusText = 'В процессе';
+		}
 
-	rentService.getRents(function(rents) {
-		tableBody.empty();
-		rents.content.forEach(item => {
-			var statusText, badgeClass;
-			if(item.status == 'CLOSE') {
-				statusText = 'ЗАВЕРШЕНА';
-				badgeClass = 'alert-success';
-			} else {
-				badgeClass = 'alert-primary';
-				statusText = 'В ПРОЦЕССЕ';
-			} 
-
-			tableBody.append(
-				'<tr>' + 
-					`<td>${item.id}</td>` + 
-					`<td>${item.customer.login}</td>` +
-					`<td>${item.transport.identificationNumber}</td>` +
-					`<td><span class="badge ${badgeClass}">${statusText}</span></td>` + 
-					`<td>${item.beginTimeRent} ${item.endTimeRent ? ' - ' + item.endTimeRent : ''}</td>` +
-					`<td>${item.beginParking.name} -> ` + (item.endParking ? `${item.endParking.name}</td>` : '</td>') +
-					`<td>${item.amount ? item.amount : ''}</td>` +
-				'</tr>');
-		});
-	});	
+		tableBody.append(
+			'<tr>' +
+			`<td>${item.id}</td>` +
+			`<td>${item.customer.login}</td>` +
+			`<td>${item.transport.identificationNumber}</td>` +
+			`<td><span class="badge ${badgeClass}">${statusText}</span></td>` +
+			`<td>${item.beginTimeRent} ${item.endTimeRent ? ' - ' + item.endTimeRent : ''}</td>` +
+			`<td>${item.beginParking.name} -> ` + (item.endParking ? `${item.endParking.name}</td>` : '</td>') +
+			`<td>${item.amount ? item.amount : ''}</td>` +
+			'</tr>');
+	});
 }
 
 function initTransportPage() {
-	var tableBody = $('div#transport-container table tbody');
 	parkingService.getParkings(parkingL => {
 		parkingList = parkingL;
 	});
-	transportService.getTransportsPageable(function(transports) {
-		tableBody.empty();
-		transports.content.forEach(item => {
-			var id = item.id;
-			var type, condition, status;
-			type = item.type == "SCOOTER" ? 'Самокат' : 'Велосипед';
+	transportService.getTransportsPageable(fillTransport);
+}
 
-			condition = item.condition;
-			if(condition == 'EXCELLENT') {
-				condition = 'Отлично';
-			}
-			else if(condition == 'GOOD') {
-				condition = 'Хорошо';
-			}
-			else {
-				condition = 'Посредственно';
-			}
+function initTransportPageFiltered() {
+	var ident = $("#ident-filter").val();
+	var pName = $("#p-name-filter").val();
+	var cond = $("#cond-filter").val();
+	var status = $("#t-status-filter").val();
+	var filter = {
+		identificationNumber: ident == '' ? null : ident,
+		parkingName: pName == '' ? null : pName,
+		condition: cond == '' ? null : cond,
+		status: status == '' ? null : status,
+		page: 0,
+		size: 100
+	}
+	transportService.getTransportsPageable(fillTransport, filter);
+}
 
-			status = item.status;
-			if(status == 'FREE') {
-				status = 'Свободен';
-			}
-			else if(status == 'BUSY') {
-				status = 'Занят';
-			}
-			else {
-				status = 'Недоступен';
-			}
+function fillTransport(transports) {
+	var tableBody = $('div#transport-container table tbody');
+	tableBody.empty();
+	transports.content.forEach(item => {
+		var id = item.id;
+		var type, condition, status;
+		type = item.type == "SCOOTER" ? 'Самокат' : 'Велосипед';
 
-			tableBody.append(
-				'<tr>' +
-				`<td id="id-${id}" class="immutable">${item.id}</td>` +
-				`<td id="type-${id}" class="immutable">${type}</td>` +
-				`<td id="ident-${id}" class="immutable">${item.identificationNumber}</td>` +
-				`<td id="coor-${id}">${item.coordinates ? item.coordinates : '-'}</td>` +
-				`<td id="park-${id}" class="park-selector">${item.parking ? item.parking.name : '-'}</td>` +
-				`<td id="cond-${id}" class="condition-selector">${condition}</td>` +
-				`<td id="status-${id}" class="status-selector">${status}</td>` +
-				`<td id="charge-${id}" class="number">${item.chargePercentage ? item.chargePercentage : '-'}</td>` +
-				`<td id="speed-${id}" class="number">${item.maxSpeed ? item.maxSpeed : '-'}</td>` +
-				'</tr>');
-		});
+		condition = item.condition;
+		if(condition == 'EXCELLENT') {
+			condition = 'Отлично';
+		}
+		else if(condition == 'GOOD') {
+			condition = 'Хорошо';
+		}
+		else {
+			condition = 'Посредственно';
+		}
+
+		status = item.status;
+		if(status == 'FREE') {
+			status = 'Свободен';
+		}
+		else if(status == 'BUSY') {
+			status = 'Занят';
+		}
+		else {
+			status = 'Недоступен';
+		}
+
+		tableBody.append(
+			'<tr>' +
+			`<td id="id-${id}" class="immutable">${item.id}</td>` +
+			`<td id="type-${id}" class="immutable">${type}</td>` +
+			`<td id="ident-${id}" class="immutable">${item.identificationNumber}</td>` +
+			`<td id="coor-${id}">${item.coordinates ? item.coordinates : '-'}</td>` +
+			`<td id="park-${id}" class="park-selector">${item.parking ? item.parking.name : '-'}</td>` +
+			`<td id="cond-${id}" class="condition-selector">${condition}</td>` +
+			`<td id="status-${id}" class="status-selector">${status}</td>` +
+			`<td id="charge-${id}" class="number">${item.chargePercentage ? item.chargePercentage : '-'}</td>` +
+			`<td id="speed-${id}" class="number">${item.maxSpeed ? item.maxSpeed : '-'}</td>` +
+			'</tr>');
 	});
 }
 
+function dropTransportFiltered() {
+	document.getElementById("ident-filter").value = '';
+	document.getElementById("p-name-filter").value = '';
+	document.getElementById("cond-filter").selectedIndex = 0;
+	document.getElementById("t-status-filter").selectedIndex = 0;
+	initTransportPage();
+}
+
 function initCustomersPage() {
+	customerService.getCustomersPageable(fillCustomers);
+}
+
+function initCustomersPageFiltered() {
+	var login = $("#login-filter").val();
+	var role = $("#role-filter").val();
+	var filter = {
+		login: login == '' ? null : login,
+		role: role == '' ? null : role,
+		page: 0,
+		size: 100
+	}
+	customerService.getCustomersPageable(fillCustomers, filter);
+}
+
+function fillCustomers(customers) {
 	var tableBody = $('div#customers-container table tbody');
-	customerService.getCustomersPageable(function(customers) {
-		tableBody.empty();
-		customers.content.forEach(item => {
-			var role = item.role;
-			if(role == 'USER'){
-				role = 'Пользователь';
-			}
-			else if(role == 'MANAGER' ) {
-				role = 'Менеджер';
-			}
-			else {
-				role = 'Администратор';
-			}
-			tableBody.append(
-				'<tr>' +
-				`<td>${item.login}</td>` +
-				`<td>${item.balance}</td>` +
-				`<td>${role}</td>` +
-				`<td>${item.tripCount}</td>` +
-				'</tr>');
-		});
+	tableBody.empty();
+	customers.content.forEach(item => {
+		var role = item.role;
+		if(role == 'USER'){
+			role = 'Пользователь';
+		}
+		else if(role == 'MANAGER' ) {
+			role = 'Менеджер';
+		}
+		else {
+			role = 'Администратор';
+		}
+		tableBody.append(
+			'<tr>' +
+			`<td>${item.login}</td>` +
+			`<td>${item.balance}</td>` +
+			`<td>${role}</td>` +
+			`<td>${item.tripCount}</td>` +
+			'</tr>');
 	});
+}
+
+function dropCustomersFiltered() {
+	document.getElementById("login-filter").value = '';
+	document.getElementById("role-filter").selectedIndex = 0;
+	initCustomersPage();
 }
 
 function initParkingPage() {
@@ -312,7 +379,6 @@ function initParkingPageFiltered() {
 		page: 0,
 		size: 100
 	}
-	console.log(filter)
 	parkingService.getParkingPageable(fillParking, filter);
 }
 
