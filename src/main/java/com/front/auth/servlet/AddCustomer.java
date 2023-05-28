@@ -5,6 +5,7 @@ import com.front.auth.configuration.ApplicationConfig;
 import com.front.auth.controller.Dispatcher;
 import com.front.auth.dao.CustomerControllerDao;
 import com.front.auth.model.dto.CustomerDto;
+import com.front.auth.model.enums.CustomerStatus;
 import com.front.auth.model.enums.Role;
 import com.front.auth.model.entity.Customer;
 import org.springframework.context.ApplicationContext;
@@ -32,12 +33,7 @@ public class AddCustomer extends Dispatcher {
             boolean confirmRegistration = Registration.checkRegistration(login, password, confirmPassword);
 
             if (confirmRegistration) {
-                Customer customer = new Customer();
-                customer.setId(0L);
-                customer.setLogin(login);
-                customer.setPassword(password);
-                customer.setBalance(0L);
-                customer.setRole(Role.USER);
+                Customer customer = createNewCustomer(login, password);
 
                 try {
                     CustomerControllerDao customerController = context.getBean(CustomerControllerDao.class);
@@ -66,5 +62,16 @@ public class AddCustomer extends Dispatcher {
         else if (request.getParameter("cancel") != null) {
             this.forward("/login.html", request, response);
         }
+    }
+
+    public static Customer createNewCustomer(String login, String password) {
+        Customer customer = new Customer();
+        customer.setId(0L);
+        customer.setLogin(login);
+        customer.setPassword(password);
+        customer.setBalance(0L);
+        customer.setRole(Role.USER);
+        customer.setStatus(CustomerStatus.ACTIVE);
+        return customer;
     }
 }

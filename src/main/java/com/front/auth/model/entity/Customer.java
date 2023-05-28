@@ -1,5 +1,6 @@
 package com.front.auth.model.entity;
 
+import com.front.auth.model.enums.CustomerStatus;
 import com.front.auth.model.enums.Role;
 
 public class Customer {
@@ -8,6 +9,7 @@ public class Customer {
     private String password;
     private Long balance;
     private Role role;
+    private CustomerStatus status;
 
     public Long getId() {
         return id;
@@ -29,6 +31,10 @@ public class Customer {
         return role;
     }
 
+    public CustomerStatus getStatus() {
+        return status;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -47,5 +53,9 @@ public class Customer {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public void setStatus(CustomerStatus status) {
+        this.status = status;
     }
 }

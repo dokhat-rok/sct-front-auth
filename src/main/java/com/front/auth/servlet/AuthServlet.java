@@ -5,7 +5,6 @@ import com.front.auth.configuration.ApplicationConfig;
 import com.front.auth.controller.Dispatcher;
 import com.front.auth.dao.CustomerControllerDao;
 import com.front.auth.model.entity.Customer;
-import com.front.auth.model.enums.Role;
 import com.front.auth.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class AuthServlet extends Dispatcher {
 
         if(customer == null){
             log.info("Ошибка авторизации {} - пользователь не найден", login);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Ошибка авторизации - пользователь не найден");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Ошибка авторизации - пользователь не найден");
         }
         else{
             String token = JwtUtil.getJwtDays(customer, 7);
@@ -64,13 +63,7 @@ public class AuthServlet extends Dispatcher {
         String confirmPassword = request.getParameter("confirmPassword");
 
         if(Registration.checkRegistration(login, password, confirmPassword)){
-            Customer customer = new Customer();
-            customer.setId(0L);
-            customer.setLogin(login);
-            customer.setPassword(password);
-            Long initBalance = 1000L;
-            customer.setBalance(initBalance);
-            customer.setRole(Role.USER);
+            Customer customer = AddCustomer.createNewCustomer(login, password);
             log.info("{}", customer.getLogin());
 
             try {
