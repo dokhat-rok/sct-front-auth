@@ -6,21 +6,19 @@ import com.front.auth.dao.CustomerControllerDao;
 import com.front.auth.model.dto.CustomerDto;
 import com.front.auth.model.entity.Customer;
 import com.front.auth.utils.JwtUtil;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.io.*;
-import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.sql.SQLException;
 
 public class CheckCustomer extends Dispatcher {
-    /*private final Logger log = LoggerFactory.getLogger("com.project.servlet");*/
+
     private static final Logger log = LoggerFactory.getLogger(CheckCustomer.class);
 
     public String getServletInfo(){

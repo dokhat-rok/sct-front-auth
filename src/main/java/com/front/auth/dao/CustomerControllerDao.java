@@ -1,6 +1,7 @@
 package com.front.auth.dao;
 
 import com.front.auth.model.entity.Customer;
+import com.front.auth.model.enums.CustomerStatus;
 import com.front.auth.model.enums.Role;
 
 import java.sql.PreparedStatement;
@@ -32,17 +33,19 @@ public class CustomerControllerDao extends AbstractControllerDao<Customer, Integ
 
 
     public Customer getEntityByLoginPassword(String requestLogin, String requestPassword) throws SQLException {
+        String query = "SELECT ID, BALANCE, ROLE, STATUS FROM CUSTOMER WHERE LOGIN = '" + requestLogin + "' AND PASSWORD = '"
+                + requestPassword + "' AND STATUS = '" + CustomerStatus.ACTIVE.name() + "';";
         PreparedStatement preparedStatement = super.getPrepareStatement(
-                "SELECT ID, BALANCE, ROLE FROM CUSTOMER WHERE LOGIN = '" + requestLogin + "' AND PASSWORD = '" + requestPassword + "'"
+                query
         );
-        Customer customer = new Customer();
         ResultSet rs = preparedStatement.executeQuery();
         if(rs.next()){
+            Customer customer = new Customer();
             customer.setId(rs.getLong(1));
             customer.setLogin(requestLogin);
             customer.setPassword(requestPassword);
             customer.setBalance(rs.getLong(2));
-            customer.setRole(Role.getRole(rs.getString(3)));
+            customer.setRole(Role.valueOf(rs.getString(3)));
             super.closePrepareStatement(preparedStatement);
             return customer;
         }
@@ -70,9 +73,12 @@ public class CustomerControllerDao extends AbstractControllerDao<Customer, Integ
             confirmUnique = !customer.getLogin().equals(confirmLogin);
         }
         if(confirmUnique){
+            String query = "insert into CUSTOMER values (" + (lastId + 1) + ", '" + customer.getLogin() + "', '"
+                    + customer.getPassword() + "', " + customer.getBalance() + ",  '" + customer.getRole()
+                    +"', '" + customer.getStatus() + "');";
+            System.out.println(query);
             statement.executeUpdate(
-                    "insert into CUSTOMER values (" + (lastId + 1) + ", '" + customer.getLogin() + "', '"
-                            + customer.getPassword() + "', " + customer.getBalance() + ",  '" + customer.getRole() +"');"
+                    query
             );
             super.closeStatement(statement);
             return true;
